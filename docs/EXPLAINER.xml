@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SentinelDLP v1 POC - EXPLAINER.xml
+  
+  PURPOSE: Provide this file to Claude AI for comprehensive explanation of this repository.
+  
+  USAGE: Upload this file to Claude and ask:
+    - "Explain this system to me" (for IT-savvy explanation)
+    - "Give me an executive summary" (for business overview)
+    - "Generate preview images/artifacts" (for visual representations)
+    - "What do I need to know to deploy this?"
+-->
+
+<sentinel_dlp_explainer version="1.0-poc">
+  
+  <metadata>
+    <product_name>SentinelDLP</product_name>
+    <version>1.0 POC (Proof of Concept)</version>
+    <release_date>January 2026</release_date>
+    <edition>Proof of Concept - Evaluation Only</edition>
+    <target_audience>Security teams, Developers, IT Evaluators</target_audience>
+    <max_users>50</max_users>
+    <production_ready>false</production_ready>
+  </metadata>
+
+  <executive_summary>
+    <one_liner>AI-powered document scanner that automatically detects sensitive information and classifies documents by risk level.</one_liner>
+    
+    <business_value>
+      <point>Prevents data leaks by identifying sensitive content before sharing</point>
+      <point>Reduces manual document review time by 80%+</point>
+      <point>Automatic regulatory compliance flagging (GDPR, HIPAA, PCI-DSS, SOX)</point>
+      <point>Routes findings to appropriate departments automatically</point>
+      <point>Creates audit trail of all document scans</point>
+    </business_value>
+    
+    <cost_summary>
+      <component name="Claude API">~$3-15/1000 documents (varies by size)</component>
+      <component name="Infrastructure">Single server, minimal resources</component>
+      <component name="Licensing">MIT License - Free</component>
+    </cost_summary>
+    
+    <risk_assessment>
+      <risk level="HIGH">No authentication - anyone with network access can use</risk>
+      <risk level="MEDIUM">Text files only - PDF/images not supported</risk>
+      <risk level="LOW">Single instance - no high availability</risk>
+    </risk_assessment>
+    
+    <recommendation>
+      Suitable for internal evaluation and small team pilots only. 
+      For production deployment, upgrade to v1 Docker (small teams) or v2 Production (enterprise).
+    </recommendation>
+  </executive_summary>
+
+  <technical_overview>
+    <architecture_type>Monolithic - Single Backend + Static Frontend</architecture_type>
+    
+    <components>
+      <component name="Backend API">
+        <technology>Python 3.11, FastAPI 0.115</technology>
+        <purpose>REST API for document analysis, settings, incidents</purpose>
+        <port>8000</port>
+        <file>src/backend/main.py</file>
+        <lines_of_code>~600</lines_of_code>
+      </component>
+      
+      <component name="Frontend UI">
+        <technology>React 18, Single HTML file with inline JS</technology>
+        <purpose>Web interface for scanning, dashboard, settings</purpose>
+        <port>3000</port>
+        <file>src/frontend/index.html</file>
+        <features>
+          <feature>Document upload/paste</feature>
+          <feature>Real-time analysis results</feature>
+          <feature>Incident dashboard with filtering</feature>
+          <feature>Settings management</feature>
+        </features>
+      </component>
+      
+      <component name="AI Engine">
+        <technology>Anthropic Claude API</technology>
+        <purpose>Document sensitivity analysis</purpose>
+        <models_supported>
+          <model>claude-sonnet-4-20250514 (default, recommended)</model>
+          <model>claude-opus-4-20250514 (most capable)</model>
+          <model>claude-haiku-4-20250514 (fastest, cheapest)</model>
+        </models_supported>
+      </component>
+      
+      <component name="Data Storage">
+        <technology>JSON Files</technology>
+        <files>
+          <file purpose="settings">data/settings.json</file>
+          <file purpose="incidents">data/incidents.json</file>
+        </files>
+        <limitation>Not thread-safe, not suitable for high concurrency</limitation>
+      </component>
+    </components>
+
+    <data_flow>
+      <step order="1">User uploads document or pastes text via Web UI</step>
+      <step order="2">Frontend sends POST request to /api/analyze/text or /api/analyze/file</step>
+      <step order="3">Backend validates request and extracts text content</step>
+      <step order="4">Backend constructs analysis prompt with system instructions</step>
+      <step order="5">Backend sends request to Claude API</step>
+      <step order="6">Claude analyzes document and returns JSON assessment</step>
+      <step order="7">Backend parses response, creates incident record</step>
+      <step order="8">Backend returns results to frontend</step>
+      <step order="9">Frontend displays results with visualizations</step>
+    </data_flow>
+
+    <api_endpoints>
+      <endpoint method="GET" path="/">"Service status</endpoint>
+      <endpoint method="GET" path="/api/health">Health check with API status</endpoint>
+      <endpoint method="POST" path="/api/analyze/text">Analyze text directly</endpoint>
+      <endpoint method="POST" path="/api/analyze/file">Analyze uploaded file</endpoint>
+      <endpoint method="GET" path="/api/incidents">List incidents with filtering</endpoint>
+      <endpoint method="GET" path="/api/incidents/{id}">Get specific incident</endpoint>
+      <endpoint method="DELETE" path="/api/incidents/{id}">Delete incident</endpoint>
+      <endpoint method="DELETE" path="/api/incidents">Clear all incidents</endpoint>
+      <endpoint method="GET" path="/api/stats">Dashboard statistics</endpoint>
+      <endpoint method="GET" path="/api/settings">Get current settings</endpoint>
+      <endpoint method="PUT" path="/api/settings">Update settings</endpoint>
+      <endpoint method="POST" path="/api/settings/test">Test API connection</endpoint>
+      <endpoint method="GET" path="/api/models">List available models</endpoint>
+    </api_endpoints>
+
+    <sensitivity_dimensions>
+      <dimension name="pii" description="Personal Identifiable Information">
+        SSN, passport numbers, driver's license, home addresses, phone numbers, 
+        email addresses, medical records, biometric data
+      </dimension>
+      <dimension name="financial" description="Financial Information">
+        Revenue figures, budget data, salary information, bank accounts, 
+        credit card numbers, financial forecasts, investment data
+      </dimension>
+      <dimension name="strategic_business" description="Strategic Business Information">
+        M&amp;A plans, partnership negotiations, competitive analysis, 
+        product roadmaps, market strategies
+      </dimension>
+      <dimension name="intellectual_property" description="Intellectual Property">
+        Patents, trade secrets, source code, R&amp;D data, proprietary algorithms
+      </dimension>
+      <dimension name="legal_compliance" description="Legal and Compliance">
+        Attorney-client privileged communications, regulatory filings, 
+        audit reports, compliance documentation
+      </dimension>
+      <dimension name="operational_security" description="Operational Security">
+        Network diagrams, credentials, system configurations, 
+        vulnerability reports, security procedures
+      </dimension>
+      <dimension name="hr_employee" description="HR and Employee Data">
+        Performance reviews, disciplinary actions, termination records, 
+        compensation details, employee disputes
+      </dimension>
+    </sensitivity_dimensions>
+
+    <scoring_system>
+      <level name="LOW" range="0-30" color="#10b981">
+        Public information, marketing materials, general announcements
+      </level>
+      <level name="MEDIUM" range="31-60" color="#f59e0b">
+        Internal use, non-sensitive business data, routine communications
+      </level>
+      <level name="HIGH" range="61-85" color="#f97316">
+        Confidential, limited distribution, requires authorization
+      </level>
+      <level name="CRITICAL" range="86-100" color="#ef4444">
+        Highly restricted, severe impact if leaked, executive approval required
+      </level>
+    </scoring_system>
+  </technical_overview>
+
+  <deployment_guide>
+    <prerequisites>
+      <requirement>Python 3.11 or higher</requirement>
+      <requirement>pip package manager</requirement>
+      <requirement>Anthropic API key</requirement>
+      <requirement>Network access to api.anthropic.com</requirement>
+    </prerequisites>
+
+    <installation_steps>
+      <step order="1">Clone repository: git clone [repo-url]</step>
+      <step order="2">Navigate to directory: cd sentinel-dlp-v1-poc</step>
+      <step order="3">Install dependencies: pip install -r src/backend/requirements.txt</step>
+      <step order="4">Start services: ./start.sh</step>
+      <step order="5">Open browser to http://localhost:3000</step>
+      <step order="6">Configure API key in Settings page</step>
+    </installation_steps>
+
+    <configuration>
+      <setting name="API Key" location="Web UI > Settings" required="true">
+        Anthropic API key for Claude access
+      </setting>
+      <setting name="Model" location="Web UI > Settings" default="claude-sonnet-4-20250514">
+        Claude model to use for analysis
+      </setting>
+      <setting name="Max Tokens" location="Web UI > Settings" default="4096">
+        Maximum response tokens from Claude
+      </setting>
+    </configuration>
+  </deployment_guide>
+
+  <limitations_and_security>
+    <limitation severity="CRITICAL" category="Authentication">
+      No authentication mechanism. All endpoints are publicly accessible.
+      Anyone with network access can upload documents and view all results.
+    </limitation>
+    <limitation severity="CRITICAL" category="API Security">
+      API key stored in plaintext JSON file. Could be exposed if filesystem accessed.
+    </limitation>
+    <limitation severity="HIGH" category="File Support">
+      Only text-based files supported (TXT, CSV, JSON, etc.).
+      No support for PDF, DOCX, images, or other binary formats.
+    </limitation>
+    <limitation severity="HIGH" category="Scalability">
+      Single instance only. No load balancing or horizontal scaling.
+      JSON file storage not suitable for concurrent access.
+    </limitation>
+    <limitation severity="MEDIUM" category="HTTPS">
+      HTTP only. No TLS/SSL encryption for data in transit.
+    </limitation>
+    <limitation severity="MEDIUM" category="Logging">
+      Basic incident logging only. No comprehensive audit trail.
+    </limitation>
+  </limitations_and_security>
+
+  <upgrade_path>
+    <next_version name="v1 Docker Edition">
+      <adds>Docker deployment, OCR support, PDF/image processing, NGINX reverse proxy</adds>
+      <best_for>Small to medium teams (50-200 users)</best_for>
+      <effort>Moderate - new deployment, same concepts</effort>
+    </next_version>
+    <next_version name="v2 Production Edition">
+      <adds>Authentication (AD/LDAP), Elasticsearch, Redis queues, Celery workers, horizontal scaling, comprehensive audit logging</adds>
+      <best_for>Enterprise deployments (300+ endpoints, 1000+ users)</best_for>
+      <effort>Significant - full production architecture</effort>
+    </next_version>
+  </upgrade_path>
+
+  <artifact_generation_instructions>
+    <instruction type="architecture_diagram">
+      Generate a React component showing the v1 POC architecture:
+      - Simple 3-tier diagram: Browser -> FastAPI -> Claude API
+      - Use dark theme with cyan/purple accents
+      - Show data flow arrows
+      - Label ports (3000, 8000)
+    </instruction>
+    
+    <instruction type="ui_preview">
+      Generate a React component showing the SentinelDLP dashboard:
+      - Dark theme interface (#0a0a0f background)
+      - Left sidebar with Scanner, Dashboard, Settings navigation
+      - Main area showing stats cards (Total Scans, Critical, High, Avg Score)
+      - Incidents table below with severity badges
+      - Use JetBrains Mono for numbers, Inter for text
+    </instruction>
+    
+    <instruction type="score_visualization">
+      Generate a React component showing a sensitivity score ring:
+      - Circular progress indicator
+      - Score number in center (0-100)
+      - Color based on severity (green/yellow/orange/red)
+      - Level label below (LOW/MEDIUM/HIGH/CRITICAL)
+    </instruction>
+  </artifact_generation_instructions>
+
+</sentinel_dlp_explainer>
